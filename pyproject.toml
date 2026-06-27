@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jacov"
+version = "0.0.1"
+description = "Java 分支级、按测试类、能指到未覆盖行的 agent 覆盖率反馈器（tracer bullet 阶段）"
+requires-python = ">=3.10"
+dependencies = ["mcp>=1.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# pythonpath 让 pytest 无需安装即可 import jacov（src layout）
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

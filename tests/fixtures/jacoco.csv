@@ -1,0 +1,65 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+optaplanner-jxjy,chaoxing.app,MAIN,8,0,0,0,3,0,2,0,2,0
+optaplanner-jxjy,fanya.domain.strategy,FieldType,25,67,4,0,4,12,3,2,1,2
+optaplanner-jxjy,fanya.domain.strategy,OperatorType,41,39,6,0,7,5,4,2,1,2
+optaplanner-jxjy,fanya.domain.strategy.teacher,TeacherDateParseStrategy,302,3,36,0,77,1,23,1,5,1
+optaplanner-jxjy,fanya.domain.strategy.teacher,TeacherDayOfWeekParseStrategy,147,34,18,4,36,10,12,3,2,2
+optaplanner-jxjy,fanya.domain.strategy.teacher,TeacherWeekTimeParseStrategy,0,493,0,98,0,106,0,61,0,12
+optaplanner-jxjy,fanya.domain.strategy.teacher,TeacherParseStrategyFactory,0,46,0,2,0,10,0,4,0,3
+optaplanner-jxjy,fanya.controllers,PlanningTaskController,328,0,44,0,56,0,30,0,8,0
+optaplanner-jxjy,fanya.domain.justification,ConstrainsJustification,443,0,30,0,54,0,17,0,2,0
+optaplanner-jxjy,fanya.task,AbstractMultiNodeTask,156,0,22,0,52,0,25,0,14,0
+optaplanner-jxjy,fanya.task,SchedulingTaskExecutor,627,0,78,0,145,0,54,0,15,0
+optaplanner-jxjy,fanya.config.filter,NeedRoomLessonFilter,14,0,4,0,2,0,4,0,2,0
+optaplanner-jxjy,fanya.config.filter,ExcludeNoTimeslotValueFilter,18,0,6,0,4,0,5,0,2,0
+optaplanner-jxjy,fanya.config.filter,NeedTeacherLessonFilter,14,0,4,0,2,0,4,0,2,0
+optaplanner-jxjy,fanya.domain.constrains,Constrains,79,0,4,0,19,0,7,0,5,0
+optaplanner-jxjy,fanya.domain.constrains,TargetKey,23,8,0,0,3,1,3,1,3,1
+optaplanner-jxjy,fanya.domain.constrains,ClassConflictPair,25,0,2,0,2,0,3,0,2,0
+optaplanner-jxjy,fanya.services,TimeTableService.new TypeReference() {...},6,0,0,0,1,0,1,0,1,0
+optaplanner-jxjy,fanya.services,TimeTableService.new TypeReference() {...},6,0,0,0,1,0,1,0,1,0
+optaplanner-jxjy,fanya.services,TimeTableService.new TypeReference() {...},6,0,0,0,1,0,1,0,1,0
+optaplanner-jxjy,fanya.services,TimeTableService.new TypeReference() {...},6,0,0,0,1,0,1,0,1,0
+optaplanner-jxjy,fanya.services,TimeTableService,3805,0,399,0,816,0,272,0,70,0
+optaplanner-jxjy,fanya.services,TimeTableService.new TypeReference() {...},6,0,0,0,1,0,1,0,1,0
+optaplanner-jxjy,fanya.services,TimeTableService.new TypeReference() {...},6,0,0,0,1,0,1,0,1,0
+optaplanner-jxjy,fanya.services,TimeTableService.new TypeReference() {...},6,0,0,0,1,0,1,0,1,0
+optaplanner-jxjy,fanya.services,PlanningTaskService,94,0,0,0,25,0,6,0,6,0
+optaplanner-jxjy,fanya.services,ExportService.new TypeReference() {...},3,0,0,0,1,0,1,0,1,0
+optaplanner-jxjy,fanya.services,TimeTableService.new TypeReference() {...},6,0,0,0,1,0,1,0,1,0
+optaplanner-jxjy,fanya.services,TimeTableService.new TypeReference() {...},6,0,0,0,1,0,1,0,1,0
+optaplanner-jxjy,fanya.services,PlanningTaskScoreService,29,0,0,0,6,0,5,0,5,0
+optaplanner-jxjy,fanya.services,CommonMethods,232,8,22,2,50,4,20,2,9,1
+optaplanner-jxjy,fanya.services,ConflictAnalysisService,762,0,88,0,140,0,55,0,11,0
+optaplanner-jxjy,fanya.services,ExportService,980,0,82,0,162,0,50,0,9,0
+optaplanner-jxjy,fanya.services,SpecialWeekSchedulingService,389,0,30,0,85,0,18,0,3,0
+optaplanner-jxjy,fanya.services,TimeTableService.new TypeReference() {...},6,0,0,0,1,0,1,0,1,0
+optaplanner-jxjy,fanya.services,TimeTableService.new TypeReference() {...},6,0,0,0,1,0,1,0,1,0
+optaplanner-jxjy,fanya.domain,Lesson,606,0,134,0,94,0,92,0,25,0
+optaplanner-jxjy,fanya.domain,Timeslot,161,32,42,0,25,10,29,2,8,2
+optaplanner-jxjy,fanya.domain,ConflictAnalyzer.ResourceDayKey,9,0,0,0,1,0,1,0,1,0
+optaplanner-jxjy,fanya.domain,Course,37,0,0,0,8,0,4,0,4,0
+optaplanner-jxjy,fanya.domain,CourseClassAllocation,31,0,0,0,8,0,1,0,1,0
+optaplanner-jxjy,fanya.domain,Teacher,28,0,0,0,8,0,3,0,3,0
+optaplanner-jxjy,fanya.domain,LessonDifficultyComparator,51,0,10,0,13,0,7,0,2,0
+optaplanner-jxjy,fanya.domain,ConflictAnalyzer.LongPair,31,0,2,0,4,0,3,0,2,0
+optaplanner-jxjy,fanya.domain,LessonContext,15,0,0,0,7,0,2,0,2,0
+optaplanner-jxjy,fanya.domain,Room,23,0,0,0,8,0,3,0,3,0
+optaplanner-jxjy,fanya.domain,ConflictAnalyzer,758,0,134,0,171,0,87,0,20,0
+optaplanner-jxjy,fanya.domain,Clazz,35,0,4,0,5,0,5,0,3,0
+optaplanner-jxjy,fanya.domain.strategy.clazz,ClazzInClazzParseStrategy,89,0,12,0,26,0,10,0,4,0
+optaplanner-jxjy,fanya.domain.strategy.clazz,ClazzParseStrategyFactory,32,0,2,0,8,0,4,0,3,0
+optaplanner-jxjy,fanya.config,DataSourceConfig,66,0,0,0,20,0,3,0,3,0
+optaplanner-jxjy,fanya.config,SolverConfiguration,372,0,14,0,78,0,19,0,12,0
+optaplanner-jxjy,fanya.domain.strategy.course,CourseClassIdParseStrategy,240,0,28,0,55,0,22,0,8,0
+optaplanner-jxjy,fanya.domain.strategy.course,CourseDayOfWeekParseStrategy,139,0,16,0,36,0,11,0,3,0
+optaplanner-jxjy,fanya.domain.strategy.course,CourseDateParseStrategy,304,0,36,0,78,0,24,0,6,0
+optaplanner-jxjy,fanya.domain.strategy.course,CourseWeekTimeParseStrategy,491,0,98,0,106,0,61,0,12,0
+optaplanner-jxjy,fanya.domain.strategy.course,CourseTimeslotIdParseStrategy,263,0,56,0,59,0,34,0,6,0
+optaplanner-jxjy,fanya.domain.strategy.course,CourseParseStrategyFactory,67,0,2,0,13,0,4,0,3,0
+optaplanner-jxjy,fanya.domain.strategy.course,CourseTeacherIdParseStrategy,109,0,14,0,31,0,10,0,3,0
+optaplanner-jxjy,fanya.entity,PlanningTask,6,0,0,0,1,0,1,0,1,0
+optaplanner-jxjy,fanya.utils,LargeTextCodec,108,0,16,0,24,0,12,0,4,0
+optaplanner-jxjy,fanya.solver,TimeTableConstraintProvider,1702,0,154,0,340,0,177,0,100,0
+optaplanner-jxjy,fanya.domain.strategy.classRoom,ClassroomCourseParseStrategy,70,0,10,0,20,0,8,0,3,0
+optaplanner-jxjy,fanya.domain.strategy.classRoom,ClassRoomParseStrategyFactory,32,0,2,0,8,0,4,0,3,0
