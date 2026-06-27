@@ -15,7 +15,7 @@ from . import check
 
 def main(argv=None):
     args = _parse_args(argv)
-    result = check.run_tests(args.module_dir, args.tests, args.package, args.tool_dir,
+    result = check.run_tests(args.module_dir, args.tests, args.package,
                              compile_first=not args.no_compile, reuse_forks=not args.no_reuse)
     _print_summary(result)
     if result["status"] == "FAIL":
@@ -28,7 +28,6 @@ def _parse_args(argv):
     parser.add_argument("--module-dir", required=True, help="模块目录（含 pom.xml）")
     parser.add_argument("--tests", default="", help="测试类，逗号分隔；不填且不填 package = 全量")
     parser.add_argument("--package", default="", help="业务包（如 fanya/schedule），只测该包")
-    parser.add_argument("--tool-dir", default=None, help="tool/ 目录（提供 env.sh）")
     parser.add_argument("--no-compile", action="store_true", help="跳过编译（代码已编译时更快）")
     parser.add_argument("--no-reuse", action="store_true", help="每个测试类独立 JVM（严格隔离，慢）")
     return parser.parse_args(argv)

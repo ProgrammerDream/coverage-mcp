@@ -12,6 +12,12 @@ dependencies = ["mcp>=1.0"]
 [project.optional-dependencies]
 dev = ["pytest>=7"]
 
+# 装包后可直接用 jacov / jacov-runtests / jacov-mcp 命令（免 python -m）
+[project.scripts]
+jacov = "jacov.check:main"
+jacov-runtests = "jacov.runtests:main"
+jacov-mcp = "jacov.server:run"
+
 [tool.setuptools.packages.find]
 where = ["src"]
 

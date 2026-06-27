@@ -1,0 +1,6 @@
+# 统一用 LF 行尾，跨平台一致（避免 Windows CRLF 污染）
+* text=auto eol=lf
+*.py text eol=lf
+*.toml text eol=lf
+*.md text eol=lf
+*.yml text eol=lf

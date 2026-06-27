@@ -10,7 +10,7 @@
 - **M1 端到端** ✅ runner 复刻 maven 覆盖率链路；与 bash `run-module-test.sh` 对同一 case 逐字段一致（含未覆盖行）。
 - **M2 MCP 壳** ✅ FastMCP 暴露 `coverage_check`，返回紧凑 JSON。
 - **M3 按包自动收集 + JSON 瘦身** ✅ `--package fanya/schedule` 一条测整包；uncovered 的 file 相对模块路径省 token。
-- M4 抽独立仓 + 编排迁 mvnw/just —— 后续。
+- **M4 去耦合** ✅ 砍掉对 `tool/env.sh`、git bash、IDEA 集成参数的依赖；maven 发现 + 配置走纯 Python（`env.py` + `jacov.toml`）；跨平台 subprocess 直调 mvn。已独立 git 仓 + CI + entry points。
 
 ## 结构
 
@@ -85,6 +85,26 @@ python -m jacov.check --module-dir optaplanner-jxjy\optaplanner-jxjy --tests Tea
 
 - **别**抄 bash 写法：`PYTHONPATH=src python ...`（PS 不支持这种前缀赋值）和行尾 `\` 换行（PS 续行符是反引号 `` ` ``）——都会报 `Missing expression after unary operator '--'`。
 - 装好包后**一行命令**最干净，什么前缀都不用加。
+
+## 配置（jacov.toml，可选）
+
+不放 `jacov.toml` 时走默认：maven 从 PATH / `MAVEN_HOME` 自动发现、JaCoCo 0.8.11、JDK17 add-opens、settings 和本地仓用 maven 默认（`~/.m2`）。
+
+需要自定义时，把 `jacov.example.toml` 复制为 `jacov.toml`（已被 `.gitignore`，因含机器相关路径）：
+
+```toml
+[maven]
+home = "/path/to/maven3"            # 本机没有 mvn/mvnw 时，指向 maven 安装根（其下有 bin/mvn）
+settings = "/path/to/settings.xml"  # 私有仓 / 镜像 / 凭据
+local_repo = "/path/to/.m2/repository"
+[jacoco]
+version = "0.8.11"
+excludes = "com.sun.proxy.*"        # instrument 排除（动态代理类，避免污染覆盖率）
+[test]
+add_opens = ["java.base/java.lang"] # fork 测试 JVM 的 --add-opens（JDK17+）
+```
+
+查找顺序：从 `--module-dir` 上溯 → 包目录。
 
 ## 全量纯测试（像 Jenkins，不跑覆盖率）
 

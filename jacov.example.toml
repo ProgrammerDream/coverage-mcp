@@ -1,0 +1,23 @@
+# jacov 配置模板（可选）。不放 jacov.toml 则走默认：
+#   maven 自动发现（PATH / MAVEN_HOME）、JaCoCo 0.8.11、JDK17 add-opens、
+#   settings 和本地仓用 maven 默认（~/.m2）。
+# 复制本文件为 jacov.toml 后按需修改（jacov.toml 应加入 .gitignore，因含机器相关路径）。
+
+[maven]
+# 本机没有 mvn / mvnw 时，指向某个 maven 安装根（其下有 bin/mvn）：
+# home = "/path/to/apache-maven-3.9.9"
+# 或直接给 mvn 可执行文件：
+# exec = "/usr/bin/mvn"
+# 自定义 settings.xml（私有仓、镜像、凭据等）：
+# settings = "/path/to/settings.xml"
+# 自定义本地仓位置：
+# local_repo = "/path/to/.m2/repository"
+
+[jacoco]
+version = "0.8.11"
+# instrument 排除（如动态代理类，避免污染覆盖率）：
+# excludes = "com.alibaba.dubbo.common.bytecode.Wrapper*:com.sun.proxy.*"
+
+[test]
+# fork 测试 JVM 的 --add-opens（JDK17+ 反射需要）：
+add_opens = ["java.base/java.lang", "java.base/java.util", "java.base/java.math"]

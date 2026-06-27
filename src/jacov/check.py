@@ -15,7 +15,7 @@ from . import collect, jacoco, runner
 from .model import convert_to_coverage_ratio
 
 
-def check_coverage(module_dir, tests="", cover="", min_branch=0, tool_dir=None,
+def check_coverage(module_dir, tests="", cover="", min_branch=0,
                    compile_first=True, reuse_forks=True, package=""):
     """高层入口：跑覆盖率并返回结构化结果 dict。CLI 与 MCP 共用。
 
@@ -23,10 +23,9 @@ def check_coverage(module_dir, tests="", cover="", min_branch=0, tool_dir=None,
     否则用手列的 tests/cover（严格模式）。
     """
     abs_module = os.path.abspath(module_dir)
-    resolved_tool = tool_dir or _guess_tool_dir(abs_module)
     min_ratio = convert_to_coverage_ratio(min_branch)
     test_classes, cover_classes, strict = _resolve_targets(abs_module, tests, cover, package)
-    return run_and_collect(abs_module, test_classes, cover_classes, min_ratio, resolved_tool,
+    return run_and_collect(abs_module, test_classes, cover_classes, min_ratio,
                            compile_first, reuse_forks, strict)
 
 
@@ -43,10 +42,10 @@ def _resolve_targets(module_dir, tests, cover, package):
     return _split(tests), _split(cover), True
 
 
-def run_and_collect(module_dir, test_classes, cover_classes, min_ratio, tool_dir,
+def run_and_collect(module_dir, test_classes, cover_classes, min_ratio,
                     compile_first=True, reuse_forks=True, strict=True):
     """跑 maven 覆盖率 → 解析 csv/xml/surefire → 组装结构化结果。"""
-    run = runner.run_coverage(module_dir, test_classes, tool_dir, compile_first, reuse_forks)
+    run = runner.run_coverage(module_dir, test_classes, compile_first, reuse_forks)
     summaries = jacoco.parse_csv_summary(run["csv"], cover_classes or None, strict)
     uncovered = jacoco.parse_uncovered_branches(run["xml"], module_dir, cover_classes or None)
     suites = _parse_all_surefire(module_dir)
@@ -81,12 +80,11 @@ def build_result(module_dir, test_classes, suites, summaries, uncovered, min_rat
     }
 
 
-def run_tests(module_dir, tests="", package="", tool_dir=None, compile_first=True, reuse_forks=True):
+def run_tests(module_dir, tests="", package="", compile_first=True, reuse_forks=True):
     """跑测试（不覆盖率，Jenkins 式）。tests/package 都空 = 全量（模块下所有 *Test.java）。返回汇总 dict。"""
     abs_module = os.path.abspath(module_dir)
-    resolved_tool = tool_dir or _guess_tool_dir(abs_module)
     test_classes = _resolve_test_classes(abs_module, tests, package)
-    runner.run_tests(abs_module, test_classes, resolved_tool, compile_first, reuse_forks)
+    runner.run_tests(abs_module, test_classes, compile_first, reuse_forks)
     suites = _parse_all_surefire(abs_module)
     return _build_test_summary(abs_module, suites)
 
@@ -124,7 +122,7 @@ def _build_test_summary(module_dir, suites):
 
 def main(argv=None):
     args = _parse_args(argv)
-    result = check_coverage(args.module_dir, args.tests, args.cover, args.min_branch, args.tool_dir,
+    result = check_coverage(args.module_dir, args.tests, args.cover, args.min_branch,
                             compile_first=not args.no_compile, reuse_forks=not args.no_reuse,
                             package=args.package)
     _print_human(result)
@@ -140,7 +138,6 @@ def _parse_args(argv):
     parser.add_argument("--cover", default="", help="卡覆盖率的业务类，逗号分隔；空=ALL 汇总")
     parser.add_argument("--package", default="", help="业务包（如 fanya/schedule），自动收集测试类+业务类")
     parser.add_argument("--min-branch", default="0", help="最小分支覆盖率，支持 80 或 0.8")
-    parser.add_argument("--tool-dir", default=None, help="tool/ 目录（提供 env.sh）")
     parser.add_argument("--no-compile", action="store_true",
                         help="跳过编译用 surefire:test（代码已编译时更快）")
     parser.add_argument("--no-reuse", action="store_true",
@@ -159,17 +156,6 @@ def _split(value):
             name = name[:-5]
         items.append(name)
     return items
-
-
-def _guess_tool_dir(module_dir):
-    """从模块目录逐级上溯，找到含 env.sh 的 tool/ 目录。"""
-    current = module_dir
-    for _ in range(6):
-        candidate = os.path.join(current, "tool", "env.sh")
-        if os.path.exists(candidate):
-            return os.path.join(current, "tool")
-        current = os.path.dirname(current)
-    raise SystemExit("找不到 tool/env.sh，请用 --tool-dir 指定")
 
 
 def _parse_all_surefire(module_dir):
