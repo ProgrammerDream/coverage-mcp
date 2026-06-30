@@ -5,6 +5,7 @@ compile.py 与后续测试入口都可以复用这里，避免项目目录规则
 from __future__ import annotations
 
 import os
+import ntpath
 
 
 PROJECT_STRATEGY = {
@@ -50,7 +51,8 @@ def resolve_workspace_root(workspace_root: str = "") -> str:
 
 def _reject_drive_relative_path(path: str) -> None:
     """拦截 `C:Users...` 这类 Git Bash 反斜杠被吞后的 Windows 相对盘符路径。"""
-    drive, tail = os.path.splitdrive(path)
+    # ntpath 能在 Linux CI 上按 Windows 规则识别 C:Users...，避免跨平台测试漏判。
+    drive, tail = ntpath.splitdrive(path)
     if drive and tail and not tail.startswith(("\\", "/")):
         raise ValueError(
             "workspace_root 不是合法绝对路径。Git Bash 下请用正斜杠，例如 "
