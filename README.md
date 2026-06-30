@@ -146,6 +146,9 @@ jacov-compile fanyajwproject-course-v2 --workspace-root C:\record\develop\contin
 
 编译日志统一写到 `<workspace-root>/target/maven-logs/`，避免 `mvn clean` 删除模块自身 `target` 时把正在写入的日志删掉。执行过程中会打印当前步骤、总步骤数、已耗时、单步开始/结束时间和单步耗时。
 
+> Git Bash 下 Windows 路径请用正斜杠，例如 `--workspace-root C:/Users/lin/IdeaProjects`。不要写
+> `C:\Users\lin\IdeaProjects`，反斜杠会被 Git Bash 当转义符吞掉。
+
 ## 性能与开关
 
 覆盖率合并成**单条 maven 命令**（prepare-agent → 测试 → report），避免多次 JVM 冷启动；多测试类默认复用 fork JVM。

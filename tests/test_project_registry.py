@@ -1,6 +1,8 @@
 """项目注册表离线测试：锁定 tool/projects.sh 迁移后的目录推导规则。"""
 from pathlib import Path
 
+import pytest
+
 from jacov import project_registry
 
 
@@ -19,3 +21,8 @@ def test_rpc_dirs_follow_api_svc_convention(tmp_path):
     assert Path(dirs["root"]).name == "fanyajwproject-rpc"
     assert Path(dirs["api"]).parts[-2:] == ("fanyajwproject-rpc", "fanyajwproject-rpc-api")
     assert Path(dirs["svc"]).parts[-2:] == ("fanyajwproject-rpc", "fanyajwproject-rpc-svc")
+
+
+def test_reject_drive_relative_workspace_root():
+    with pytest.raises(ValueError, match="Git Bash"):
+        project_registry.resolve_workspace_root("C:UserslinIdeaProjects")

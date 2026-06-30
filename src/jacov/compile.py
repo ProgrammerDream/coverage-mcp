@@ -60,7 +60,11 @@ def compile_module(module_dir: str, goals=None) -> dict:
 
 def main(argv=None):
     args = _parse_args(argv)
-    result = compile_project(args.project, args.workspace_root, args.strategy)
+    try:
+        result = compile_project(args.project, args.workspace_root, args.strategy)
+    except ValueError as error:
+        print(f"Error: {error}", file=sys.stderr)
+        return 1
     _print_summary(result)
     if result["status"] == "FAIL":
         return 1

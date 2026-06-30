@@ -43,8 +43,19 @@ def default_workspace_root() -> str:
 def resolve_workspace_root(workspace_root: str = "") -> str:
     """把空值转成默认工作区，并统一成绝对路径。"""
     if workspace_root:
+        _reject_drive_relative_path(workspace_root)
         return os.path.abspath(workspace_root)
     return os.path.abspath(default_workspace_root())
+
+
+def _reject_drive_relative_path(path: str) -> None:
+    """拦截 `C:Users...` 这类 Git Bash 反斜杠被吞后的 Windows 相对盘符路径。"""
+    drive, tail = os.path.splitdrive(path)
+    if drive and tail and not tail.startswith(("\\", "/")):
+        raise ValueError(
+            "workspace_root 不是合法绝对路径。Git Bash 下请用正斜杠，例如 "
+            "--workspace-root C:/Users/lin/IdeaProjects，不要写 C:\\Users\\lin\\IdeaProjects"
+        )
 
 
 def project_strategy(project_name: str, strategy: str = "") -> str:
