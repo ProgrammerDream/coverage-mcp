@@ -32,10 +32,12 @@ def coverage_check(module_dir: str, tests: str = "", cover: str = "", min_branch
 
 @mcp.tool()
 def compile_project(project_name: str, workspace_root: str = "", strategy: str = "") -> dict:
-    """按注册策略编译项目，返回每个 Maven 步骤的状态与日志路径。
+    """编译目标并返回每个 Maven 步骤的状态与日志路径，三级回退自动识别入参。
 
     Args:
-        project_name: 项目名，如 fanyajwproject-course-v2
+        project_name: 注册项目名（全名/短名，如 fanyajwproject-course-v2 或 course-v2），
+            或含 pom.xml 的目录路径（相对/绝对/嵌套/双层同名均可，相对优先）。
+            未注册的目录按 path 策略 clean+compile。
         workspace_root: 工作区根目录；空则优先从当前目录或 coverage-mcp 父目录推导
         strategy: 可选策略覆盖：default/top-level/shared-jar/rpc
     """

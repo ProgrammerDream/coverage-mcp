@@ -14,29 +14,55 @@ from . import env, project_registry, runner
 
 
 def compile_project(project_name: str, workspace_root: str = "", strategy: str = "") -> dict:
-    """按注册策略编译项目，返回每一步 Maven 执行结果。"""
-    resolved_root = project_registry.resolve_workspace_root(workspace_root)
-    resolved_strategy = project_registry.project_strategy(project_name, strategy)
-    steps = []
+    """编译目标，三级回退（对齐 tool/compile.sh 的 dispatch）：
 
+    1. 注册项目名/短名，或显式 strategy → 按策略推导目录布局编译；
+    2. 未注册但能解析成「含 pom.xml 的目录」（相对/绝对/嵌套/双层同名均可）→ path 策略 clean+compile；
+    3. 都不命中 → 报错并列出可用项目。
+    """
+    resolved_root = project_registry.resolve_workspace_root(workspace_root)
     started_at = datetime.now()
     started_ticks = time.monotonic()
-    log_dir = os.path.join(resolved_root, "target", "maven-logs")
     config = env.load_config(resolved_root)
-    if resolved_strategy in ("default", "top-level"):
-        _build_clean_then(steps, resolved_root, project_name, resolved_strategy, "编译", ["compile"],
-                          config, log_dir, started_ticks)
-    elif resolved_strategy == "shared-jar":
-        _build_clean_then(steps, resolved_root, project_name, resolved_strategy, "安装",
-                          ["install", "-Dmaven.test.skip=true"], config, log_dir, started_ticks)
-    elif resolved_strategy == "rpc":
-        _build_rpc(steps, resolved_root, project_name, config, log_dir, started_ticks)
-    else:
-        raise ValueError(f"未知策略 '{resolved_strategy}'（项目 {project_name}）")
 
+    # 1) 注册项目（全名/短名）或显式策略覆盖：按策略布局编译
+    canonical = project_registry.canonical_project_name(project_name)
+    if strategy or canonical:
+        name = canonical or project_name
+        resolved_strategy = project_registry.project_strategy(name, strategy)
+        if resolved_strategy not in ("default", "top-level", "shared-jar", "rpc"):
+            raise ValueError(f"未知策略 '{resolved_strategy}'（项目 {name}）")
+        log_dir = os.path.join(resolved_root, "target", "maven-logs")
+        steps = []
+        if resolved_strategy in ("default", "top-level"):
+            _build_clean_then(steps, resolved_root, name, resolved_strategy, "编译", ["compile"],
+                              config, log_dir, started_ticks)
+        if resolved_strategy == "shared-jar":
+            _build_clean_then(steps, resolved_root, name, resolved_strategy, "安装",
+                              ["install", "-Dmaven.test.skip=true"], config, log_dir, started_ticks)
+        if resolved_strategy == "rpc":
+            _build_rpc(steps, resolved_root, name, config, log_dir, started_ticks)
+        return _finish(name, resolved_root, resolved_strategy, steps, log_dir, started_at, started_ticks)
+
+    # 2) 未注册：当目录路径回退（相对优先，减少绝对路径带来的问题）
+    target_dir = project_registry.resolve_dir_target(resolved_root, project_name)
+    if target_dir:
+        # clean 会删除 module_dir/target，日志放父级目录，避免删掉使用中的日志文件
+        log_dir = os.path.join(os.path.dirname(target_dir), "target", "maven-logs")
+        steps = []
+        _build_path(steps, target_dir, config, log_dir, started_ticks)
+        return _finish(project_name, resolved_root, "path", steps, log_dir, started_at, started_ticks)
+
+    # 3) 既非注册项目也非有效目录
+    names = ", ".join(item["name"] for item in project_registry.available_projects())
+    raise ValueError(f"未注册的项目，且不是含 pom.xml 的目录: {project_name}\n可用项目: {names}")
+
+
+def _finish(project_name, resolved_root, strategy, steps, log_dir, started_at, started_ticks):
+    """收尾：统一计算耗时并组装返回结构。"""
     ended_at = datetime.now()
     duration_seconds = round(time.monotonic() - started_ticks, 3)
-    return _build_result(project_name, resolved_root, resolved_strategy, steps,
+    return _build_result(project_name, resolved_root, strategy, steps,
                          log_dir, started_at, ended_at, duration_seconds)
 
 
@@ -100,6 +126,16 @@ def _build_rpc(steps, workspace_root, project_name, config, log_dir, build_start
             return
 
 
+def _build_path(steps, module_dir, config, log_dir, build_started_ticks):
+    """path 策略：对任意「含 pom.xml 的目录」执行 clean + compile，无需预先注册。"""
+    name = os.path.basename(module_dir)
+    if not _run_step(steps, module_dir, f"[1/2] 清理 {name}", ["clean"],
+                     config, log_dir, 1, 2, build_started_ticks):
+        return
+    _run_step(steps, module_dir, f"[2/2] 编译 {name}", ["compile"],
+              config, log_dir, 2, 2, build_started_ticks)
+
+
 def _run_step(steps, module_dir, label, goals, config, log_dir, step_index, step_total, build_started_ticks):
     """校验 pom.xml 后执行 Maven，并把结果压成 MCP 友好的 step dict。"""
     started_at = datetime.now()
@@ -161,7 +197,8 @@ def _status_from_steps(steps):
 
 def _parse_args(argv):
     parser = argparse.ArgumentParser(prog="jacov.compile")
-    parser.add_argument("project", help="项目名，如 fanyajwproject-course-v2")
+    parser.add_argument("project", help="项目名（全名/短名，如 fanyajwproject-course-v2 或 course-v2），"
+                                        "或含 pom.xml 的目录路径（相对/绝对/嵌套均可）")
     parser.add_argument("--workspace-root", default="", help="工作区根目录；空则自动推导")
     parser.add_argument("--strategy", default="", help="覆盖注册表策略：default/top-level/shared-jar/rpc")
     return parser.parse_args(argv)
@@ -171,7 +208,8 @@ def _print_summary(result):
     print("\n" + "=" * 44)
     print(f"项目编译结果（{result['project']}）")
     print("=" * 44)
-    print(f"策略: {result['strategy']}, 状态: {result['status']}, 总用时: {_format_duration(result['duration_seconds'])}")
+    print(
+        f"策略: {result['strategy']}, 状态: {result['status']}, 总用时: {_format_duration(result['duration_seconds'])}")
     print(f"Start Time: {result['started_at']}")
     print(f"End Time: {result['ended_at']}")
     print(f"日志目录: {result['log_dir']}")
@@ -203,5 +241,5 @@ def _format_duration(seconds):
     return f"{hours}h {minutes}m {secs}s"
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     sys.exit(main())

@@ -13,6 +13,12 @@ venv/
 .mypy_cache/
 .ruff_cache/
 
+# 覆盖率产物
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
 # 本机配置（含绝对路径，不入库；开源用户照 jacov.example.toml 自行创建）
 jacov.toml
 
