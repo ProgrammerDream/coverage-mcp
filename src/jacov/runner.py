@@ -130,8 +130,7 @@ def _invoke_maven(module_dir, goals, config, log_dir, step_label):
 
     started_at = datetime.now()
     start_ticks = time.monotonic()
-    print(f"\n{step_label}", flush=True)
-    print(f"Step Start Time: {started_at.strftime('%H:%M:%S')}", flush=True)
+    print(f"\n── {step_label}", flush=True)
     proc = subprocess.Popen(
         _platform_cmd(args), cwd=module_dir,
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors="replace", bufsize=1,
@@ -148,9 +147,11 @@ def _invoke_maven(module_dir, goals, config, log_dir, step_label):
     status = "PASS"
     if proc.returncode != 0:
         status = f"FAIL(exit {proc.returncode})"
-    print(f"Step End Time: {ended_at.strftime('%H:%M:%S')}", flush=True)
-    print(f"[STEP {status}] {step_label}  用时: {_format_duration(duration_seconds)}  日志: {log_file}",
-          flush=True)
+    # 成功只报用时；失败才附日志路径，方便定位（成功的日志路径在结尾汇总统一给目录）
+    tail = f"[{status}] 用时 {_format_duration(duration_seconds)}"
+    if proc.returncode != 0:
+        tail += f"  日志: {log_file}"
+    print(tail, flush=True)
     return {
         "exit_code": proc.returncode,
         "status": status,

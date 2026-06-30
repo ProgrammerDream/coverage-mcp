@@ -53,3 +53,10 @@ def test_build_test_summary_aggregates_all_suites():
     assert summary["passed"] == 6  # 8 - 1失败 - 0错误 - 1跳过
     assert summary["status"] == "FAIL"
     assert "fanya.BTest" in summary["failed_suites"]
+
+
+def test_coverage_summary_ratio_zero_when_no_branches():
+    # total==0 时 ratio 定义为 0（覆盖 model.CoverageSummary.ratio 的零分支分支）
+    summary = CoverageSummary("X", 0, 0)
+    assert summary.total == 0
+    assert summary.ratio == 0.0

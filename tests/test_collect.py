@@ -24,3 +24,14 @@ def test_collect_package_missing_dir_returns_empty(tmp_path):
     tests, cover = collect_package(str(tmp_path), "no/such/pkg")
     assert tests == []
     assert cover == []
+
+
+def test_collect_package_skips_non_java_files(tmp_path):
+    # 非 .java 文件应被跳过（覆盖 _class_name 的非 .java 分支）
+    main = tmp_path / "src" / "main" / "java" / "fanya" / "x"
+    main.mkdir(parents=True)
+    (main / "Foo.java").write_text("", encoding="utf-8")
+    (main / "readme.txt").write_text("", encoding="utf-8")
+    (main / "Bar.kt").write_text("", encoding="utf-8")
+    _tests, cover = collect_package(str(tmp_path), "fanya.x")
+    assert cover == ["Foo"]

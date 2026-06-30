@@ -251,5 +251,5 @@ def _print_uncovered(uncovered):
               f"已覆盖分支={line['covered']}, 代码={line['code']}")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     sys.exit(main())

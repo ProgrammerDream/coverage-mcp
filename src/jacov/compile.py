@@ -153,7 +153,6 @@ def _run_step(steps, module_dir, label, goals, config, log_dir, step_index, step
         "duration_seconds": 0,
         "elapsed_seconds": round(step_started_ticks - build_started_ticks, 3),
     }
-    _print_progress(step, step_index, step_total)
     if not os.path.isfile(os.path.join(module_dir, "pom.xml")):
         ended_at = datetime.now()
         step["status"] = "FAIL"
@@ -206,30 +205,13 @@ def _parse_args(argv):
 
 def _print_summary(result):
     print("\n" + "=" * 44)
-    print(f"项目编译结果（{result['project']}）")
-    print("=" * 44)
-    print(
-        f"策略: {result['strategy']}, 状态: {result['status']}, 总用时: {_format_duration(result['duration_seconds'])}")
-    print(f"Start Time: {result['started_at']}")
-    print(f"End Time: {result['ended_at']}")
+    print(f"项目编译结果（{result['project']}）  策略: {result['strategy']}  "
+          f"状态: {result['status']}  总用时: {_format_duration(result['duration_seconds'])}")
     print(f"日志目录: {result['log_dir']}")
     for step in result["steps"]:
-        log = step.get("log", "")
-        print(f"[{step['status']}] {step['name']} progress={step['progress']} "
-              f"duration={_format_duration(step['duration_seconds'])} goals={' '.join(step['goals'])}")
+        print(f"[{step['status']}] {step['name']}  {_format_duration(step['duration_seconds'])}")
         if step.get("error"):
             print(f"  {step['error']}")
-        if log:
-            print(f"  日志: {log}")
-
-
-def _print_progress(step, step_index, step_total):
-    """每步启动前打印进度，让长编译能看到当前执行到哪一步。"""
-    print("\n" + "-" * 44)
-    print(f"当前进度: {step_index}/{step_total}  已耗时: {_format_duration(step['elapsed_seconds'])}")
-    print(f"执行步骤: {step['name']}")
-    print(f"模块目录: {step['module_dir']}")
-    print(f"Goals: {' '.join(step['goals'])}")
 
 
 def _format_duration(seconds):
