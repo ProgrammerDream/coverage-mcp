@@ -8,6 +8,7 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+import time
 from datetime import datetime
 
 from . import env
@@ -31,8 +32,8 @@ def run_coverage(module_dir, test_classes, compile_first=True, reuse_forks=False
     _clean_stale(target, (exec_path, csv_path, xml_path))
     test_arg = ",".join(test_classes)
     goals = _coverage_goals(test_arg, exec_path, compile_first, reuse_forks, config)
-    rc = _invoke_maven(module_dir, goals, config, log_dir, f"跑覆盖率测试 {test_arg}")
-    return {"csv": csv_path, "xml": xml_path, "exec": exec_path, "test_ok": rc == 0}
+    result = _invoke_maven(module_dir, goals, config, log_dir, f"跑覆盖率测试 {test_arg}")
+    return {"csv": csv_path, "xml": xml_path, "exec": exec_path, "test_ok": result["exit_code"] == 0}
 
 
 def run_tests(module_dir, test_classes, compile_first=True, reuse_forks=True):
@@ -46,8 +47,17 @@ def run_tests(module_dir, test_classes, compile_first=True, reuse_forks=True):
     label = "跑全量测试"
     if test_classes:
         label = f"跑测试 {','.join(test_classes)}"
-    rc = _invoke_maven(module_dir, _test_goals(test_classes, compile_first, reuse_forks), config, log_dir, label)
-    return {"test_ok": rc == 0}
+    result = _invoke_maven(module_dir, _test_goals(test_classes, compile_first, reuse_forks), config, log_dir, label)
+    return {"test_ok": result["exit_code"] == 0}
+
+
+def invoke_maven(module_dir, goals, step_label, config=None, log_dir=""):
+    """给编译调度复用的 Maven 执行入口，返回退出码与日志路径。"""
+    if config is None:
+        config = env.load_config(module_dir)
+    if not log_dir:
+        log_dir = os.path.join(module_dir, "target", "maven-logs")
+    return _invoke_maven(module_dir, goals, config, log_dir, step_label)
 
 
 def _clean_stale(target, report_paths):
@@ -111,14 +121,17 @@ def _test_goals(test_classes, compile_first, reuse_forks):
 
 
 def _invoke_maven(module_dir, goals, config, log_dir, step_label):
-    """纯 subprocess 直调 mvn（跨平台），实时流式逐行读，关键行即时打屏。返回退出码。"""
+    """纯 subprocess 直调 mvn（跨平台），实时流式逐行读，关键行即时打屏。"""
     os.makedirs(log_dir, exist_ok=True)
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     log_file = os.path.join(log_dir, f"{os.path.basename(module_dir)}-{stamp}.log")
     maven = env.find_maven(config)
     args = [maven, *env.maven_opts(config), "--batch-mode", "--no-transfer-progress", *goals]
 
+    started_at = datetime.now()
+    start_ticks = time.monotonic()
     print(f"\n{step_label}", flush=True)
+    print(f"Step Start Time: {started_at.strftime('%H:%M:%S')}", flush=True)
     proc = subprocess.Popen(
         _platform_cmd(args), cwd=module_dir,
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors="replace", bufsize=1,
@@ -130,11 +143,22 @@ def _invoke_maven(module_dir, goals, config, log_dir, step_label):
                 print(line.rstrip(), flush=True)
     proc.wait()
 
+    ended_at = datetime.now()
+    duration_seconds = round(time.monotonic() - start_ticks, 3)
     status = "PASS"
     if proc.returncode != 0:
         status = f"FAIL(exit {proc.returncode})"
-    print(f"[STEP {status}] {step_label}  日志: {log_file}", flush=True)
-    return proc.returncode
+    print(f"Step End Time: {ended_at.strftime('%H:%M:%S')}", flush=True)
+    print(f"[STEP {status}] {step_label}  用时: {_format_duration(duration_seconds)}  日志: {log_file}",
+          flush=True)
+    return {
+        "exit_code": proc.returncode,
+        "status": status,
+        "log": log_file,
+        "started_at": started_at.isoformat(timespec="seconds"),
+        "ended_at": ended_at.isoformat(timespec="seconds"),
+        "duration_seconds": duration_seconds,
+    }
 
 
 def _platform_cmd(args):
@@ -162,3 +186,12 @@ def _is_key_line(line):
     if "] Running " in line or "Tests run:" in line:
         return True
     return False
+
+
+def _format_duration(seconds):
+    """秒数转成人读耗时，供长时间 Maven 步骤持续反馈。"""
+    total = int(seconds)
+    hours = total // 3600
+    minutes = (total % 3600) // 60
+    secs = total % 60
+    return f"{hours}h {minutes}m {secs}s"

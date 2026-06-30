@@ -123,6 +123,29 @@ python -m jacov.runtests --module-dir fanyajwproject-course-v2\fanyajwproject-co
 - 结尾 Jenkins 式汇总：套件 / 用例 / 通过 / 失败 / 错误 / 跳过 + 失败套件清单；退出码 0（全过）/ 1（有失败）。
 - ⚠️ 全量可能慢（course-v2 ~1900 用例、~3 分钟，大头是少数连外部/DB 的集成测试）；只验证某块用 `--package` 秒级。
 
+## 项目编译（Python 版）
+
+`jacov.compile` 把旧 `tool/compile.sh` 的项目编译策略迁到 Python，适合 CLI 和 MCP 共用。
+
+```bash
+# 默认双层项目：clean → compile
+python -m jacov.compile fanyajwproject-course-v2 --workspace-root C:\record\develop\continue-course
+
+# shared-jar：clean → install -Dmaven.test.skip=true
+python -m jacov.compile fanyajw-shared-jar --workspace-root C:\record\develop\continue-course
+
+# rpc：按旧脚本 7 步串联 clean/install/compile
+python -m jacov.compile fanyajwproject-rpc --workspace-root C:\record\develop\continue-course
+```
+
+装包后也可以直接用：
+
+```bash
+jacov-compile fanyajwproject-course-v2 --workspace-root C:\record\develop\continue-course
+```
+
+编译日志统一写到 `<workspace-root>/target/maven-logs/`，避免 `mvn clean` 删除模块自身 `target` 时把正在写入的日志删掉。执行过程中会打印当前步骤、总步骤数、已耗时、单步开始/结束时间和单步耗时。
+
 ## 性能与开关
 
 覆盖率合并成**单条 maven 命令**（prepare-agent → 测试 → report），避免多次 JVM 冷启动；多测试类默认复用 fork JVM。

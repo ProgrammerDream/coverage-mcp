@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from mcp.server.fastmcp import FastMCP
 
-from . import check
+from . import check, compile as jacov_compile
 
 mcp = FastMCP("jacov")
 
@@ -28,6 +28,18 @@ def coverage_check(module_dir: str, tests: str = "", cover: str = "", min_branch
     """
     return check.check_coverage(module_dir, tests, cover, min_branch,
                                 compile_first, reuse_forks, package)
+
+
+@mcp.tool()
+def compile_project(project_name: str, workspace_root: str = "", strategy: str = "") -> dict:
+    """按注册策略编译项目，返回每个 Maven 步骤的状态与日志路径。
+
+    Args:
+        project_name: 项目名，如 fanyajwproject-course-v2
+        workspace_root: 工作区根目录；空则优先从当前目录或 coverage-mcp 父目录推导
+        strategy: 可选策略覆盖：default/top-level/shared-jar/rpc
+    """
+    return jacov_compile.compile_project(project_name, workspace_root, strategy)
 
 
 def run():

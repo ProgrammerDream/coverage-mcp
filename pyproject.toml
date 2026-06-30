@@ -16,6 +16,7 @@ dev = ["pytest>=7"]
 [project.scripts]
 jacov = "jacov.check:main"
 jacov-runtests = "jacov.runtests:main"
+jacov-compile = "jacov.compile:main"
 jacov-mcp = "jacov.server:run"
 
 [tool.setuptools.packages.find]
