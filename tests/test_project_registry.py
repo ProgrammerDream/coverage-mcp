@@ -162,27 +162,14 @@ def test_default_workspace_root_uses_package_parent(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)  # cwd 无 tool
     pkg_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(project_registry.__file__))))
     workspace_parent = os.path.dirname(pkg_root)
-    real_isdir = os.path.isdir
-
-    def fake_isdir(path):
-        if path == os.path.join(workspace_parent, "tool"):
-            return True
-        if path == os.path.join(str(tmp_path), "tool"):
-            return False
-        return real_isdir(path)
-
-    monkeypatch.setattr(project_registry.os.path, "isdir", fake_isdir)
+    # default_workspace_root 只查 cwd/tool 与 package 父/tool：让后者存在、前者不存在
+    monkeypatch.setattr(project_registry.os.path, "isdir",
+                        lambda path: path == os.path.join(workspace_parent, "tool"))
     assert project_registry.default_workspace_root() == workspace_parent
 
 
 def test_default_workspace_root_falls_back_to_cwd(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    real_isdir = os.path.isdir
-
-    def no_tool_isdir(path):
-        if path.replace("\\", "/").endswith("/tool"):
-            return False
-        return real_isdir(path)
-
-    monkeypatch.setattr(project_registry.os.path, "isdir", no_tool_isdir)
+    # 任何 tool 目录都判为不存在 → 回退到 cwd
+    monkeypatch.setattr(project_registry.os.path, "isdir", lambda path: False)
     assert project_registry.default_workspace_root() == str(tmp_path)
