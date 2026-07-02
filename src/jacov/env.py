@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import os
 import shutil
+import sys
 import tomllib
 
 # 默认值（开源零配置可用）
@@ -17,6 +18,17 @@ DEFAULT_ADD_OPENS = [
     "java.base/java.util",
     "java.base/java.math",
 ]
+
+
+def force_utf8_stdio():
+    """CLI 入口统一把 stdout/stderr 定死为 UTF-8 输出。
+
+    Windows 下 Python 对管道/重定向默认按 ANSI 代码页（中文系统即 GBK）编码，
+    中文经 UTF-8 终端（Git Bash、新版 PowerShell）显示为乱码；定死 UTF-8 后各终端一致。
+    """
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
 
 
 def load_config(start_dir=None):

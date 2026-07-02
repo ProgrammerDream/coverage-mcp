@@ -5,6 +5,7 @@ maven 可执行与 opts 来自 env.py（jacov.toml 配置 + 默认）。
 """
 from __future__ import annotations
 
+import locale
 import os
 import shutil
 import subprocess
@@ -131,9 +132,15 @@ def _invoke_maven(module_dir, goals, config, log_dir, step_label):
     started_at = datetime.now()
     start_ticks = time.monotonic()
     print(f"\n── {step_label}", flush=True)
+    # @formatter:off
+    # Maven JVM 的控制台输出走系统 ANSI 代码页（中文 Windows = GBK），
+    # 用 locale.getencoding() 显式固定解码——它不受 PYTHONUTF8/UTF-8 模式影响，
+    # 避免 text=True 隐式默认在 UTF-8 模式下错解 GBK 字节。
+    # @formatter:on
     proc = subprocess.Popen(
         _platform_cmd(args), cwd=module_dir,
-        stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors="replace", bufsize=1,
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        encoding=locale.getencoding(), errors="replace", bufsize=1,
     )
     with open(log_file, "w", encoding="utf-8", errors="replace") as fp:
         for line in proc.stdout:

@@ -11,10 +11,11 @@ from __future__ import annotations
 import argparse
 import sys
 
-from . import check, project_registry
+from . import check, env, project_registry
 
 
 def main(argv=None):
+    env.force_utf8_stdio()
     args = _parse_args(argv)
     try:
         module_dir = _resolve_module_dir(args)

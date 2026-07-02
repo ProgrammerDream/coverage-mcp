@@ -136,3 +136,31 @@ def test_find_config_without_start_dir(monkeypatch):
     # start_dir 为空 → 跳过上溯循环（覆盖 66->72）；pkg_root 也置不存在 → 返回空
     monkeypatch.setattr(env.os.path, "isfile", lambda path: False)
     assert _find_config(None) == ""
+
+
+class _RecordingStream:
+    """记录 reconfigure 调用参数的替身流。"""
+
+    def __init__(self):
+        self.kwargs = None
+
+    def reconfigure(self, **kwargs):
+        self.kwargs = kwargs
+
+
+def test_force_utf8_stdio_reconfigures_streams(monkeypatch):
+    out, err = _RecordingStream(), _RecordingStream()
+    monkeypatch.setattr(env.sys, "stdout", out)
+    monkeypatch.setattr(env.sys, "stderr", err)
+    env.force_utf8_stdio()
+    assert out.kwargs == {"encoding": "utf-8", "errors": "replace"}
+    assert err.kwargs == {"encoding": "utf-8", "errors": "replace"}
+
+
+def test_force_utf8_stdio_skips_stream_without_reconfigure(monkeypatch):
+    # 覆盖 30->29：stdout 被替换成无 reconfigure 的对象（如 StringIO 替身）时直接跳过不报错
+    monkeypatch.setattr(env.sys, "stdout", object())
+    err = _RecordingStream()
+    monkeypatch.setattr(env.sys, "stderr", err)
+    env.force_utf8_stdio()
+    assert err.kwargs == {"encoding": "utf-8", "errors": "replace"}

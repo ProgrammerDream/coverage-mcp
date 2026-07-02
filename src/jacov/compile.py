@@ -85,6 +85,7 @@ def compile_module(module_dir: str, goals=None) -> dict:
 
 
 def main(argv=None):
+    env.force_utf8_stdio()
     args = _parse_args(argv)
     try:
         result = compile_project(args.project, args.workspace_root, args.strategy)

@@ -11,7 +11,7 @@ import glob
 import os
 import sys
 
-from . import collect, jacoco, runner
+from . import collect, env, jacoco, runner
 from .model import convert_to_coverage_ratio
 
 
@@ -121,6 +121,7 @@ def _build_test_summary(module_dir, suites):
 
 
 def main(argv=None):
+    env.force_utf8_stdio()
     args = _parse_args(argv)
     result = check_coverage(args.module_dir, args.tests, args.cover, args.min_branch,
                             compile_first=not args.no_compile, reuse_forks=not args.no_reuse,
