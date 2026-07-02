@@ -129,19 +129,19 @@ python -m jacov.runtests --module-dir fanyajwproject-course-v2\fanyajwproject-co
 
 ```bash
 # 默认双层项目：clean → compile
-python -m jacov.compile fanyajwproject-course-v2 --workspace-root C:\record\develop\continue-course
+python -m jacov.compile fanyajwproject-course-v2 --workspace-root C:\Users\lin\IdeaProjects
 
 # shared-jar：clean → install -Dmaven.test.skip=true
-python -m jacov.compile fanyajw-shared-jar --workspace-root C:\record\develop\continue-course
+python -m jacov.compile fanyajw-shared-jar --workspace-root C:\Users\lin\IdeaProjects
 
 # rpc：按旧脚本 7 步串联 clean/install/compile
-python -m jacov.compile fanyajwproject-rpc --workspace-root C:\record\develop\continue-course
+python -m jacov.compile fanyajwproject-rpc --workspace-root C:\Users\lin\IdeaProjects
 ```
 
 装包后也可以直接用：
 
 ```bash
-jacov-compile fanyajwproject-course-v2 --workspace-root C:\record\develop\continue-course
+jacov-compile fanyajwproject-course-v2 --workspace-root C:\Users\lin\IdeaProjects
 ```
 
 编译日志统一写到 `<workspace-root>/target/maven-logs/`，避免 `mvn clean` 删除模块自身 `target` 时把正在写入的日志删掉。执行过程中会打印当前步骤、总步骤数、已耗时、单步开始/结束时间和单步耗时。
